@@ -1,0 +1,76 @@
+#include <iostream>
+#include <iostream>
+#include <list>
+#include <string>
+using namespace std;
+
+class IObserver {
+ public:
+ 
+  virtual ~IObserver(){};
+  virtual void Update(const std::string &message_from_subject) = 0;
+};
+
+class Subject {
+ public:
+  virtual ~Subject() {
+    std::cout << "Goodbye, I was the Subject.\n";
+  }
+  void Attach(IObserver *observer) {
+    list_observer_.push_back(observer);
+  }
+  
+  void Notify() {
+    std::list<IObserver *>::iterator iterator = list_observer_.begin();
+    
+    while (iterator != list_observer_.end()) {
+      (*iterator)->Update(message_);
+      ++iterator;
+    }
+  }
+  
+  void CreateMessage(std::string message = "Empty") {
+    this->message_ = message;
+    cout<<"New update, notify all subscribers\n";
+    Notify();
+  }
+  
+  private:
+  std::list<IObserver *> list_observer_;
+  std::string message_;
+};
+
+class Observer : public IObserver {
+ public:
+  Observer(Subject *subject)  {
+    s1= subject;
+    s1->Attach(this);
+    std::cout << "Observer \"" << ++Observer::static_number_ << "\". is subsribed\n";
+    this->number_ = Observer::static_number_;
+  }
+  virtual ~Observer() {
+    std::cout << "Goodbye, I was the Observer \"" << this->number_ << "\".\n";
+  }
+
+  void Update(const std::string &message_from_subject) override {
+    message_from_subject_ = message_from_subject;
+    cout<<"inside update of observer\n";
+  }
+  private:
+  std::string message_from_subject_;
+  Subject *s1;
+  static int static_number_;
+  int number_;
+};
+
+int Observer::static_number_ = 0;
+
+int main()
+{
+  Subject subject;
+  Observer observer1(&subject);
+  Observer observer2 (&subject);
+  subject.CreateMessage("Hello World! :D");
+
+    return 0;
+}
